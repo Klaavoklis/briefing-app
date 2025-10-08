@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Emergency Briefing — The AI Gold Rush | Blueprint 2.0</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0a0a0a;        /* black background */
+      --fg:#ffffff;        /* white text */
+      --muted:#c7d0db;
+      --blue:#4A90E2;      /* accent */
+      --card:#101317;
+      --card2:#0c0f12;
+      --border:#1f2730;
+      --shadow:0 12px 28px rgba(0,0,0,.45);
+      --radius:18px;
+      --speed:340ms;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--fg);
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Helvetica,Arial,sans-serif;
+      line-height:1.6;
+    }
+    a{color:var(--blue);text-decoration:none}
+    img,video{max-width:100%;border-radius:14px;box-shadow:var(--shadow)}
+    .container{max-width:1020px;margin:0 auto;padding:24px}
+    /* Sticky progress (hidden on welcome) */
+    .progress-wrap{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(10,10,10,.86));backdrop-filter:saturate(150%) blur(6px);padding:10px 0;display:none;border-bottom:1px solid var(--border)}
+    .bar{height:8px;width:100%;background:#13171b;border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
+    .bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#76b7ff);transition:width var(--speed) ease}
+    .counter{display:flex;justify-content:space-between;margin:8px 2px 0 2px;font-size:12px;color:#98a6b7}
+    /* Cards & layout */
+    .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:var(--radius);padding:clamp(18px,2.2vw,28px);box-shadow:var(--shadow)}
+    h1,h2,h3{line-height:1.2;margin:10px 0 14px}
+    h1{font-size:clamp(28px,4.5vw,44px);font-weight:800;letter-spacing:-0.02em}
+    h2{font-size:clamp(22px,3.2vw,34px);font-weight:800;letter-spacing:-0.015em}
+    h3{font-size:clamp(18px,2.2vw,22px);font-weight:700}
+    p,li{font-size:clamp(15px,1.6vw,17px);color:#e7eef7}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    .cols-2{grid-template-columns:1fr}
+    @media(min-width:860px){.cols-2{grid-template-columns:1fr 1fr}}
+    /* Welcome screen */
+    .welcome{
+      min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:24px
+    }
+    .eyebrow{letter-spacing:.18em;text-transform:uppercase;color:#ff5d5d;font-weight:800;font-size:13px}
+    .subtitle{color:#9dd0ff;font-weight:600;font-size:clamp(16px,2.2vw,22px)}
+    .btn{
+      --lift: translateY(-2px);
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      background:linear-gradient(180deg,#4A90E2,#2a72c7);
+      color:#fff;border:0;border-radius:14px;padding:14px 20px;font-weight:800;
+      box-shadow:0 12px 20px rgba(74,144,226,.25), inset 0 0 0 1px rgba(255,255,255,.12);
+      cursor:pointer;transition:transform var(--speed) cubic-bezier(.2,.8,.2,1), box-shadow var(--speed), filter var(--speed)
+    }
+    .btn:hover{transform:var(--lift);box-shadow:0 18px 30px rgba(74,144,226,.35), inset 0 0 0 1px rgba(255,255,255,.18)}
+    .btn.ghost{
+      background:transparent;border:1px solid var(--border);color:#e6f0ff;
+      box-shadow:none
+    }
+    .btn.ghost:hover{border-color:#2b72c7;filter:drop-shadow(0 6px 12px rgba(74,144,226,.25))}
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+    .nav{display:flex;justify-content:space-between;gap:12px;margin:26px 0 8px}
+    .nav .btn{flex:1}
+    /* Reveal on scroll */
+    .reveal{opacity:0;transform:translateY(14px);transition:opacity 600ms ease, transform 600ms ease}
+    .reveal.visible{opacity:1;transform:none}
+    /* Page transition */
+    .page{display:none;animation:fadeIn 380ms ease forwards}
+    .page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    /* Media wrappers */
+    .media{overflow:hidden;border-radius:14px;border:1px solid var(--border);background:#0c0f12}
+    video{width:100%;height:auto;display:block}
+    /* CTA block */
+    .cta{background:linear-gradient(180deg,#0f1420,#0c1017);border:1px solid #224b74;border-radius:16px;padding:20px;text-align:center;box-shadow:0 16px 36px rgba(74,144,226,.18)}
+    .illuminated-link{font-size:clamp(18px, 2.2vw, 22px);font-weight:700;color:var(--blue);text-shadow:0 0 8px rgba(74,144,226,.6),0 0 12px rgba(120,180,255,.4);transition:var(--speed) ease}
+    .illuminated-link:hover{color:#fff;text-shadow:0 0 12px rgba(74,144,226,.9),0 0 20px rgba(120,180,255,.7)}
+    /* Footer */
+    .footer{margin:28px 0;color:#98a6b7;font-size:13px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="container" id="shell">
+    <!-- WELCOME -->
+    <section class="welcome" id="welcome">
+      <div class="card reveal" style="padding:32px;max-width:860px">
+        <div class="eyebrow">Emergency Briefing</div>
+        <h1>The AI Gold Rush</h1>
+        <p class="subtitle">The opportunity is now. The window is closing.</p>
+        <p class="muted">Forget “learning AI.” This is an operational briefing on the largest digital land grab of the decade.</p>
+        <div class="btn-row">
+          <button class="btn" id="startBtn" aria-label="Begin briefing" style="padding: 18px 36px; font-size: 20px;">Begin Briefing</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress (hidden until pages start) -->
+    <div class="progress-wrap" id="progress">
+      <div class="container" style="padding-top:0;padding-bottom:0">
+        <div class="bar"><span id="barFill"></span></div>
+        <div class="counter"><span id="stepLabel">Page 1</span><span id="pctLabel">0%</span></div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <main class="container" id="pages" style="display:none">
+
+      <!-- 1: Briefing Intro -->
+      <section class="page card" data-title="This Is Not a Guide. It’s a Warning.">
+        <h2 class="reveal">This Is Not a Guide. It’s a Warning.</h2>
+        <p class="reveal">Forget everything you think you know about "learning AI." This is not a tutorial. This is an emergency briefing on the largest digital land grab of the decade.</p>
+        <p class="reveal">Here's the situation: Right now, simple AI-generated videos, absurd, low-effort, "stupid" content, are pulling billions of views across TikTok, YouTube Shorts, and Instagram Reels. Creators are quietly making thousands while everyone else scrolls past, unaware they're watching the new economy unfold in real time.</p>
+        <p class="reveal">OpenAI has released its first social platform. Sora 2 is in pre-launch testing. AI video tools are evolving weekly. The next viral creator isn't a filmmaker, it's a strategist who moves first. This is not a future opportunity. It's a present-day gold rush, and the entry window is closing fast.</p>
+        <h3 class="reveal">A real example:</h3>
+        <p class="reveal">In less than 24 hours, an AI-generated video of a fake toilet commercial reached nearly 14 million views, hundreds of thousands of interactions and generated over 5k in earned revenue. No brand deal. No production crew. No camera. Just one creator, a prompt, and Sora 2.</p>
+        <div class="grid cols-2">
+            <div class="media reveal">
+              <video playsinline muted autoplay loop controls src="https://github.com/Klaavoklis/briefingassets/raw/refs/heads/main/milwuakee1.mp4"></video>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="media reveal">
+                  <img alt="Sora 2 video stats" src="https://github.com/Klaavoklis/briefingassets/blob/main/milwaukee.png?raw=true">
+                </div>
+                <div class="media reveal">
+                    <img src="https://github.com/Klaavoklis/briefingassets/blob/main/Earn%20through%20Tiktok.jpg?raw=true" alt="Example of earnings through TikTok AI content">
+                </div>
+            </div>
+        </div>
+        <p class="muted reveal">This briefing has one purpose: To show you the goldmine. You will see where the most profitable AI trends are emerging right now. Our Trend Blueprints are the maps, the tools that let you extract the gold before it's gone. Pay attention. Every second counts.</p>
+        <div class="nav">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" data-next>Next</button>
+        </div>
+      </section>
+
+      <!-- 2: The Goldmine -->
+      <section class="page card" data-title="The Goldmine">
+        <h2 class="reveal">The Goldmine - The Opportunity Hidden in Plain Sight</h2>
+        <p class="reveal">Everyone sees AI videos on their feed. Almost no one understands what they're looking at. Behind every "brainrot meme," and every deepfake short, there's a quiet revolution taking place. A shift from human production to prompt production.</p>
+        <p class="reveal">What used to take film studios, editors, and weeks of effort now takes one person with a prompt and a laptop. It's not about who's creative anymore. It's about who moves first.</p>
+        <p class="reveal">Every platform, TikTok, YouTube, Instagram, even OpenAI's upcoming Sora 2 ecosystem, is being flooded with algorithmically manufactured content that feels human, but isn't. The creators who understand how to engineer these formats early are pulling in millions of views while others still wonder "how they did it."</p>
+        <p class="muted reveal">This is not a passing wave. It's the beginning of a new content economy.</p>
+        <div class="media reveal">
+            <img src="https://github.com/Klaavoklis/briefingassets/blob/main/ECONOMY.png?raw=true" alt="New Content Economy">
+        </div>
+        <div class="nav">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" data-next>Next</button>
+        </div>
+      </section>
+
+      <!-- 3: The Pattern -->
+      <section class="page card" data-title="The Pattern">
+        <h2 class="reveal">The Pattern - How Al Trends Are Engineered</h2>
+        <p class="reveal">Every viral AI video looks different, but the life cycle underneath is identical. Every. Single. Time. There are three repeating phases in every AI gold rush cycle:</p>
+        <ol class="reveal">
+          <li><strong>Discovery Phase:</strong> A new AI capability (like lip-syncing, text-to-video, or emotion simulation) emerges. The first few creators post it, and unintentionally go viral.</li>
+          <li><strong>Exploitation Phase:</strong> Early adopters replicate and remix the trend. Algorithms boost it. View counts explode.</li>
+          <li><strong>Decay Phase:</strong> Everyone floods in. The format saturates. Profits crash. The next tool or trick takes its place.</li>
+        </ol>
+        <div class="media reveal">
+            <img src="https://github.com/Klaavoklis/briefingassets/blob/main/Discovery.png?raw=true" alt="AI Gold Rush Cycle">
+        </div>
+        <p class="reveal">The pattern repeats every few weeks, endlessly. Those who understand this pattern don't need to chase trends. They predict them. They know how to spot the next Discovery Phase before it breaks. And when it does, they're already there with a Blueprint in hand.</p>
+        <div class="nav">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" data-next>Next</button>
+        </div>
+      </section>
+
+      <!-- 4: The Bottleneck -->
+      <section class="page card" data-title="The Bottleneck">
+        <h2 class="reveal">The Bottleneck - Why Most Creators Still Fail</h2>
+        <p class="reveal">The opportunity is massive, but so is the noise. Millions are rushing in with no system, no process, and no understanding of the pattern. They burn weeks testing random tools. They guess prompts. They waste time "figuring it out."</p>
+        <p class="reveal">By the time they learn what works, the next trend has already replaced it. That's why most fail. They're trying to mine gold without a map. And in a landscape that evolves every seven days, that's not just inefficient, it's fatal.</p>
+        <p class="muted reveal">The winners aren't faster. They're coordinated. They know exactly which direction to dig before anyone else even arrives.</p>
+        <div class="media reveal">
+            <img src="https://github.com/Klaavoklis/briefingassets/blob/main/map.png?raw=true" alt="Map for AI Gold Rush">
+        </div>
+        <div class="nav">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" data-next>Next</button>
+        </div>
+      </section>
+
+      <!-- 5: The Map is the Product -->
+      <section class="page card" data-title="The Map is the Product">
+        <h2 class="reveal">The Map is the Product</h2>
+        <p class="reveal">In every gold rush, amateurs dig. Professionals navigate. We don't provide shovels. We provide maps. Amateurs try to sketch their own. Professionals buy the real one, and get to the gold first. Our <strong>Trend Blueprints</strong> are those maps.</p>
+        <p class="reveal">They are not tutorials. They are operational kits, precise, plug-and-play systems that take you from zero to viral content in under an hour.</p>
+        <h3 class="reveal">Each Blueprint includes:</h3>
+        <ul class="reveal">
+          <li><strong>Trend Analysis</strong> - Real examples, each reverse engineered and dissected algorithmically.</li>
+          <li><strong>Toolkit Checklist</strong> - The exact AI tools and models required to recreate viral videos in minutes.</li>
+          <li><strong>Step-by-Step Playbook</strong> - Your guided production flow, explaining every step and action in detail.</li>
+          <li><strong>Asset & Prompt Pack</strong> - The raw templates and assets ready to deploy, you just click copy & paste.</li>
+        </ul>
+        <div class="media reveal">
+          <img alt="Blueprint toolkit" src="https://github.com/Klaavoklis/briefingassets/blob/main/tools.png?raw=true">
+        </div>
+        <p class="muted reveal">You wouldn't enter a gold rush without a map. Don't enter the most competitive creator economy in history without a Blueprint. If one trend burns out, you pivot. If a new one explodes, you move first. Each new Blueprint is a new map in your arsenal. Speed is profit. Precision is survival.</p>
+        <div class="nav">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" data-next>Next</button>
+        </div>
+      </section>
+
+      <!-- 6: Your Next Move (CTA) -->
+      <section class="page card" data-title="Your Next Move">
+        <h2 class="reveal">Your Next Move</h2>
+        <p class="reveal">Your briefing is complete. You now understand the size of the opportunity, the speed it’s moving, and the only toolset that ensures you aren’t left behind.</p>
+        <h3 class="reveal">You have two options:</h3>
+        <ol class="reveal">
+          <li>Close this tab. Keep scrolling. Watch the next generation of AI creators dominate the feed while you wonder what could’ve been.</li>
+          <li>Move. Now. Choose a trend. Download the map. Follow the coordinates. Start extracting gold before the territory is claimed.</li>
+        </ol>
+        <p class="muted reveal">This is not a drill. This is the early stage of the next creator economy. And it won't stay early for long.</p>
+        <div class="cta reveal">
+          <a class="illuminated-link" href="#" id="ctaButton">Go to #blueprints channel</a>
+          <p class="muted" style="margin:8px 0 0 0">Choose your map. Start building.</p>
+        </div>
+        <p class="muted reveal" style="margin-top:16px;text-align:center">The AI Gold Rush is already underway. Will you be a consumer, or a creator?</p>
+        <div class="btn-row" style="justify-content:space-between">
+          <button class="btn ghost" data-prev>Previous</button>
+          <button class="btn" id="restart">Restart Briefing</button>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="footer">© The AI Creator Academy, Briefing 2.0 UI</div>
+  </div>
+
+  <script>
+  (function(){
+    const $ = (s,root=document)=>root.querySelector(s);
+    const $$ = (s,root=document)=>Array.from(root.querySelectorAll(s));
+
+    const welcome = $('#welcome');
+    const startBtn = $('#startBtn');
+    const progress = $('#progress');
+    const pagesWrap = $('#pages');
+    const pages = $$('.page', pagesWrap);
+    const barFill = $('#barFill');
+    const stepLabel = $('#stepLabel');
+    const pctLabel = $('#pctLabel');
+
+    let idx = 0;
+
+    function setProgress(i){
+      const total = pages.length;
+      const pct = Math.round(((i+1)/total)*100);
+      barFill.style.width = pct + '%';
+      stepLabel.textContent = `Page ${i+1} of ${total}`;
+      pctLabel.textContent = `${pct}%`;
+      document.title = pages[i].dataset.title + ' | Emergency Briefing';
+    }
+
+    function show(i){
+      pages.forEach(p=>p.classList.remove('active'));
+      pages[i].classList.add('active');
+      idx = i;
+      setProgress(i);
+      // disable prev on first, next on last
+      const prevBtns = $$('[data-prev]', pages[i]);
+      const nextBtns = $$('[data-next]', pages[i]);
+      prevBtns.forEach(b=>{ b.disabled = i===0; b.setAttribute('aria-disabled', i===0) });
+      nextBtns.forEach(b=>{ b.disabled = i===pages.length-1; b.setAttribute('aria-disabled', i===pages.length-1) });
+      // scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startExperience(targetIndex=0){
+      welcome.style.display='none';
+      progress.style.display='block';
+      pagesWrap.style.display='block';
+      show(targetIndex);
+    }
+
+    // Wire nav buttons on each page
+    pages.forEach((page,pi)=>{
+      $$('[data-prev]',page).forEach(btn=>btn.addEventListener('click',()=>pi>0 && show(pi-1)));
+      $$('[data-next]',page).forEach(btn=>btn.addEventListener('click',()=>pi<pages.length-1 && show(pi+1)));
+    });
+
+    // Buttons
+    startBtn.addEventListener('click',()=>startExperience(0));
+    $('#restart').addEventListener('click',()=>{ startExperience(0); });
+
+    // Reveal-on-scroll animations
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    },{threshold:.18});
+    $$('.reveal').forEach(el=>io.observe(el));
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e)=>{
+      if(pagesWrap.style.display==='none') return;
+      if(e.key==='ArrowRight') { if(idx<pages.length-1) show(idx+1); }
+      if(e.key==='ArrowLeft')  { if(idx>0) show(idx-1); }
+    });
+
+    // Enhance CTA: if you host a .zip for maps, make this a direct download
+    const cta = $('#ctaButton');
+    cta.addEventListener('click', (e)=>{
+      // Replace '#' with your real asset URL to trigger download, e.g.:
+      // cta.href = 'https://your.cdn/blueprints/briefing-starter.zip';
+      if(cta.getAttribute('href')==='#'){ e.preventDefault(); alert('Blueprint portal coming soon.'); }
+    });
+  })();
+  </script>
+</body>
+</html>
+
+
+
+
+
